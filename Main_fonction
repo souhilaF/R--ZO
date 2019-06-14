@@ -1,0 +1,338 @@
+              ############################################################
+        ############ Fonctions de bases à utiliser dans R ####################
+              ############################################################
+
+
+
+
+
+
+#############################################################
+#Construit une matrice symétrique à partir d'un vecteur
+#############################################################
+vect_mat_low <- function(V, diag=F)
+{
+  N <- length(V)
+  if(diag == F) {n <- (1+sqrt(1+8*N))/2} else{ n <- (-1+sqrt(1+8*N))/2}
+  M <- matrix(0,n,n) 
+  M[lower.tri(M, diag=diag)] <- V
+  B <- t(M)
+  diag(B) <- 0
+  M <- B + M
+  return(M)
+}
+
+
+###########################################################################
+#Construit un vecteur à partir d'une matrice triangulaire inférieure
+###########################################################################
+mat_vect_low <- function(M, diag=F)
+{
+  V <- M[lower.tri(M, diag = diag)]
+  return(V)
+}
+
+
+############################################################################
+#Passage d'une matrice binaire à un vecteur des indices 
+############################################################################
+mat_bin_to_vect_ind <- function(n,pi_melange)
+{
+   Z_m <- rmultinom(n, size = 1, prob = pi_melange)
+   Z_v <- which(Z_m == 1, 1)
+   Z_v <- Z_v[,1] 
+   return(Z_v, Z_m)
+ }
+
+
+###########################################################################
+#recuperer les indices de la matrice triangulaire inferieure 
+###########################################################################
+
+# indices <- function(n)
+# {
+#   N  <- n * (n-1)/2
+#   S=matrix(1:n^2, ncol=n)
+#   V <- S[lower.tri(S, diag = F)]
+#   j <- (V%/%(n+1))+1
+#   i <- V%%n
+#   i[which(i==0)]<-n
+#   return(cbind(matrix(c(i,j),ncol=2)))
+# }
+
+indices <- function(n, diag=F)
+{
+  N  <- (n * (n-1)/2)*(diag==F) +(n * (n+1)/2)*(diag==T)
+  S <- vect_mat_low(c(1:N), diag=diag)
+  S[upper.tri(S)]=0
+  return(which(S!=0,arr.ind=T))
+
+}
+
+
+############################################################################
+#passer de n à N et inversement:
+############################################################################
+
+#N <- n*(n-1)/2
+#n <-(1+sqrt(1+8*N))/2
+
+
+
+
+############################################################################
+
+############################################################################
+
+#fonction de classes des observations
+SIMULDATA <- function(gamma_arrete, pi_melange, n) {
+  P = n*(n-1)/2
+  #fonction de classes des observations
+  Z_m <- rmultinom(n, size = 1, prob = pi_melange)
+  Z_v <- which(Z_m == 1, 1)
+  Z_v <- Z_v[,1] 
+  #matrice des proba d'arrete gamma entre observations de chaque classe
+  M <- matrix(0, ncol = length(pi_melange), nrow = length(pi_melange))
+  colnames(M) = paste("Z", 1:length(pi_melange), sep = "")
+  rownames(M) = paste("Z", 1:length(pi_melange), sep = "")
+  
+  M[lower.tri(M, diag=T)] <- gamma_arrete
+  B <- t(M)
+  diag(B) <- 0
+  M <- B + M
+  
+  #G la matrice d'adjacence
+  G <- matrix(rbinom(n*n, size = 1, prob = M[Z_v,Z_v]), n, n)
+  
+  
+  #On construit le graph d'adjacence non dirigé:
+  #Arbitrairement on récupère la matrice superieure de la matrice d'adjacence R et on la symetrise.
+  #ATTENTION ne pas faire tourner l'algo suivant si on veut un graph dirigé
+  
+  
+  G[lower.tri(G, diag=T)] <- 0
+  G <- t(G)+G
+  
+  
+  
+  #On construit la matrice de précision Omega = G + nu_var*D
+  #et on trouve le nu_var le plus petit possible pour rendre la matrice Omega inversible
+  #D est la matrice de degré
+  
+  
+  
+  D2 <- apply(G,1,sum) #on fait la somme sur les lignes [trouver un autre moyen avec les matrice d'adjacence dirigée(sum sur ligne different que sur colonne)]
+  #on met ce vecteur sur une matrice diagonale pour récuperer la matrice de degré D
+  D <- matrix(0, ncol=n, nrow=n)
+  diag(D) <- D2
+  
+  
+  
+  
+  
+  
+  #construction de la matrice Omega
+  nu_var <- 0
+  mu_var <- 0
+  Omega <- (nu_var + 0.1) * D + (mu_var + 0.3) * G 
+  
+  while((min(eigen(Omega)$values)) <= 1e-4) {
+    nu_var <- nu_var + 0.1
+    mu_var <- mu_var + 0.1
+    Omega <- (nu_var + 0.1) * D + (mu_var + 0.3) * G 
+    
+  }
+  Omega <- Omega / mean(Omega)
+  Sigma <- solve(Omega)
+  
+  
+  #On génère des simulation de gaussiennes centrées de variance sigma sur 4 sites:
+  
+  Y <- mvrnorm(100, mu = c(0,0,0,0,0,0,0,0,0,0), Sigma = Sigma)
+  Y_abondance <- t(Y) %*% Y
+  
+  
+  return(list(Y,G))
+}
+
+################################################################################################
+################################################################################################
+fun_test<-function(a_i_b_i){
+  
+  return(exp(seq(log(a_i_b_i["a"]),log(a_i_b_i["b"]),length.out = a_i_b_i["k"])))
+}
+
+#######################################################################################################
+#######################################################################################################
+
+
+recup_scores <- function(Y,G){
+  
+  P <- dim(Y)
+  n <- (1+sqrt(1+8*P))/2
+  
+  Huge.edge = huge(Y, method='glasso')
+  lambda.min = min(Huge.edge$lambda)
+  lambda.max = max(Huge.edge$lambda)
+  lambda.nb = length(Huge.edge$lambda)
+  
+  #On veut qu'aucune aretes soient présentent au début donc que df=0 donc lambda max assez grand 
+  while(min(Huge.edge$df)>0){
+    lambda.max = lambda.max*2
+    lambda.seq = exp(seq(log(lambda.min), log(lambda.max),length.out = lambda.nb))
+    Huge.edge = huge(Y, method='glasso', lambda=lambda.seq)
+    plot(Huge.edge$lambda, Huge.edge$df, log='x'); abline(h=c(0, P))
+  }
+  
+  
+  while(max(Huge.edge$df)<P){
+    lambda.min = lambda.min/2
+    lambda.seq = exp(seq(log(lambda.min),log(lambda.max),length.out = lambda.nb))
+    Huge.edge = huge(Y, method='glasso', lambda=lambda.seq)
+    plot(Huge.edge$lambda, Huge.edge$df, log='x'); abline(h=c(0, P))
+    
+  }
+  
+  
+  i<-0
+  while((max(abs(diff(Huge.edge$df)))>1) & i<1e2){
+    i <- i+1
+    my_diff <- diff(Huge.edge$df)
+    l <- which((abs(my_diff))>1)
+    s <- length(l)
+    df <- matrix(NA, ncol = 3, nrow = s)
+    colnames(df) <- c('a','b','k')
+    df[,"a"] <- Huge.edge$lambda[l]
+    df[,"b"]<- Huge.edge$lambda[l+1]
+    df[,"k"] <- (abs(my_diff[l]))
+    
+    d <- lapply(X=1:s,FUN = function(x) {fun_test(df[x,])})
+    lambda.seq <- sort(unlist(c(lambda.seq,d)))
+    
+    Huge.edge = huge(Y, method='glasso', lambda=lambda.seq)
+    plot(Huge.edge$lambda, Huge.edge$df, log='x'); abline(h=c(0, P))
+  }
+  
+  
+  
+  
+  
+  
+  
+  lambda.seq<-unique(Huge.edge$lambda)
+  Huge.edge = huge(Y, method='glasso', lambda=lambda.seq)
+  longueur <- length(lambda.seq)
+  
+  
+  ##construction matrice de scores
+  S <- matrix(0,ncol=n,nrow=n)
+  for (i in 1:n){
+    for (j in 1:n){
+      if (i != j){
+        S[i,j]<-lambda.seq[max(which(sapply(Huge.edge$path, function(P) P[i,j])==1))]
+      }
+    }
+  }
+  
+  diag(S)=0
+  L<-log(S) 
+  
+  diag(L)=0
+  
+  #boxplot
+  L.G1 <- L[G==1]
+  L.G0 <- L[G==0]
+  
+  boxplot(L.G0 , L.G1, names=c("G=0","G=1"))
+  
+  
+  #histogramme
+  hist(S.G0)
+  hist(S.G1)
+  
+  ##Récupérer les scores dans un vecteur
+  
+  SV <- mat_vect_low(L)
+  
+  Scores <- L
+  
+  return(Scores)
+}
+
+
+
+##############################################################################################################
+##############################################################################################################
+
+###VEM
+
+VEM <- function(S, niter, epsilon, phi0_init, phi1_init, Pi_init, Gamma_init, tau_init){
+  
+  
+  n = dim(S)[1]
+  transfo_indices <- indices(n)
+  N = n*(n-1)/2
+  vec_S <- mat_vect_low(S)
+  
+  #initialisation des paramètres
+  Pi_hat = Pi_init
+  K <- length(Pi_init)
+  Gamma_hat = Gamma_init
+  phi0 = phi0_init #phi0=c(0.3,1)
+  phi1 = phi1_init #phi1=c(2,0.8)
+  tau_hat = tau_init
+  
+  #itération 
+  for (t in 1:niter){
+    
+    #calcul de fu 
+    
+    
+    lfu <-cbind(dnorm(vec_S,phi0[1],sqrt(phi0[2]),log = T),dnorm(vec_S, phi1[1],sqrt(phi1[2]),log = T))
+    #calcul de eta
+    #fu0 = fu[,1] %o% (1-Gamma_hat) # objet de taille N*K*K
+    #fu1 = fu[,2] %o% Gamma_hat
+    #eta0 = fu0/(fu0+fu1)
+    #eta0 = sweep(((exp(lfu[,2]-lfu[,1])-1)%o% Gamma_hat + 1)^-1 ,c(1,2), rep(1-Gamma_hat[1,],N),FUN="*")
+    dlfu = lfu[, 1] - lfu[, 2]
+    # Troncature pour eviter les pb numeriques
+    dlfu[which(abs(dlfu) > 100)] = sign(dlfu) * 100
+    eta1 = 1 / (1 + exp(dlfu) %o% ((1 - Gamma_hat) / Gamma_hat))
+    eta0 = 1 - eta1
+    # Lissage des proba a conditionnelles
+    eta0 = eta0 + 1e-4; eta1 = eta1 + 1e-4; eta = eta0 + eta1; eta0 = eta0 / eta; eta1 = eta1 / eta
+    
+
+    #calcul de A
+    A <-  eta0 * (rep(1, N)%o%log(1 - Gamma_hat)) + eta0 * lfu[,1] + eta1 * (rep(1, N)%o%log(Gamma_hat)) + eta1 * lfu[,2]
+ 
+
+    #etape VE
+    #calcul de tau
+    tau_new = matrix(0, n, K)
+    sapply(1:n, function(i){cat(i, '')
+      # m1.i = ensemble des paires dont i est le premier element
+      m1.i = which(transfo_indices[, 1]==i); if(length(m1.i)>0){B1.i = array(A[m1.i, , ], dim=c(length(m1.i), K, K))}
+      # m2.i = ensemble des paires dont i est le second element
+      m2.i = which(transfo_indices[, 2]==i); 
+      # Transpoition de A quand i est le second element de la paire m
+      if(length(m2.i)>0){B2.i = array(A[m2.i, , ], dim=c(length(m2.i), K, K)); sapply(1:length(m2.i), function(m){B2.i[m, , ] <<- t(B2.i[m, , ])})}
+      B.i = array(dim=c(length(m1.i)+length(m2.i), K, K))
+      if(length(m1.i)>0){B.i[1:length(m1.i), , ] = B1.i}
+      if(length(m2.i)>0){B.i[(length(m1.i)+1):(length(m1.i)+length(m2.i)), , ] = B2.i}
+      #  Calcul de tau
+      tau.j = tau_hat[-i, ]; tau.i = rep(0, K)
+      sapply(1:K, function(k){
+        tau.i[k] <<- log(Pi_hat[k]) + sum(tau.j * B.i[, k, ])
+        })
+      tau.i = tau.i - max(tau.i); tau.i[which(tau.i < -100)] = -100
+      tau.i = exp(tau.i); tau.i = tau.i / sum(tau.i)
+      tau.i = tau.i + 1e-4; tau.i = tau.i / sum(tau.i)
+      tau_new[i, ] <<- tau.i
+    })
+    
+    
+    
+    
+    ###########################################################################################################
+    
