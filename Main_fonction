@@ -334,7 +334,8 @@ VEM <- function(S, niter, epsilon, phi0_init, phi1_init, Pi_init, Gamma_init, ta
     #Etape M:
     
     #calcul de gamma:
-    Gamma_hat_num <- sapply(1:K, function(i){ sapply(1:K, function(j){ Gamma_hat[i,j] <<- t(tau_new[,i]) %*% vect_mat_low(eta1[,i,j]) %*% tau_new[,j]})})
+    Gamma_hat_num <- matrix(nrow = K, ncol = K)
+    Gamma_hat_num <- sapply(1:K, function(i){ sapply(1:K, function(j){ Gamma_hat_num[i,j] <<- t(tau_new[,i]) %*% vect_mat_low(eta1[,i,j]) %*% tau_new[,j]})})
     Gamma_hat_denum <- (t(tau_hat) %*% (matrix(1,n,n) - diag(1,n)) %*% tau_hat)
     Gamma_hat <- Gamma_hat_num / Gamma_hat_denum
     
@@ -346,10 +347,10 @@ VEM <- function(S, niter, epsilon, phi0_init, phi1_init, Pi_init, Gamma_init, ta
     Gamma_hat_denum <- sum(Gamma_hat_denum)
     #calcul de mu
     phi1[1] <- (sum(sapply(1:K, function(i){ sapply(1:K, function(j){ Gamma_hat[i,j] <<- t(tau_new[,i]) %*% as.matrix(vect_mat_low(eta1[,i,j]) * S) %*% tau_new[,j]})})))/Gamma_hat_num
-    phi0[1] <- (sum(sapply(1:K, function(i){ sapply(1:K, function(j){ Gamma_hat[i,j] <<- t(tau_new[,i]) %*% as.matrix(vect_mat_low(eta0[,i,j]) * S) %*% tau_new[,j]})})))/(Gamma_hat_num - Gamma_hat_denum)
+    phi0[1] <- (sum(sapply(1:K, function(i){ sapply(1:K, function(j){ Gamma_hat[i,j] <<- t(tau_new[,i]) %*% as.matrix(vect_mat_low(eta0[,i,j]) * S) %*% tau_new[,j]})})))/(Gamma_hat_denum - Gamma_hat_num)
     #calcul de sigma
     phi1[2] <- (sum(sapply(1:K, function(i){ sapply(1:K, function(j){ Gamma_hat[i,j] <<- t(tau_new[,i]) %*% as.matrix(vect_mat_low(eta1[,i,j]) * (S-phi1[1])^2) %*% tau_new[,j]})})))/Gamma_hat_num
-    phi0[2] <- (sum(sapply(1:K, function(i){ sapply(1:K, function(j){ Gamma_hat[i,j] <<- t(tau_new[,i]) %*% as.matrix(vect_mat_low(eta0[,i,j]) * (S-phi0[1])^2) %*% tau_new[,j]})})))/(Gamma_hat_num - Gamma_hat_denum)
+    phi0[2] <- (sum(sapply(1:K, function(i){ sapply(1:K, function(j){ Gamma_hat[i,j] <<- t(tau_new[,i]) %*% as.matrix(vect_mat_low(eta0[,i,j]) * (S-phi0[1])^2) %*% tau_new[,j]})})))/(Gamma_hat_denum - Gamma_hat_num)
     
     #calcul de la borne_inf pour control:
     borne_inf <- sum(tau_hat * t(sapply(1:n, function(i) {log(Pi_hat / tau_hat[i,])}))) + (sum(sapply(1:K, function(i){ sapply(1:K, function(j){t(tau_new[,i]) %*% as.matrix(vect_mat_low(A[,i,j])) %*% tau_new[,j]})})))
