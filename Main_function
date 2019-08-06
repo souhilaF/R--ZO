@@ -1,5 +1,5 @@
               ############################################################
-        ############ Fonctions de bases à utiliser dans R ####################
+                                       # Fonctions  #
               ############################################################
 
 
@@ -235,28 +235,28 @@ recup_scores <- function(Y,G){
   }
   
   diag(S)=0
-  L<-log(S) 
+  score<-log(S) 
   
-  diag(L)=0
+  diag(score)=0
   
   #boxplot
-  L.G1 <- L[G==1]
-  L.G0 <- L[G==0]
+ # L.G1 <- L[G==1]
+ # L.G0 <- L[G==0]
   
-  boxplot(L.G0 , L.G1, names=c("G=0","G=1"))
+  #boxplot(L.G0 , L.G1, names=c("G=0","G=1"))
   
   
   #histogramme
-  hist(S.G0)
-  hist(S.G1)
+  #hist(S.G0)
+  #hist(S.G1)
   
   ##Récupérer les scores dans un vecteur
   
-  SV <- mat_vect_low(L)
+  #SV <- mat_vect_low(L)
   
-  Scores <- L
   
-  return(Scores)
+  
+  return(score)
 }
 
 
