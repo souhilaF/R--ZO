@@ -1,96 +1,51 @@
-############################################################
-############ Fonctions de bases à utiliser dans R ####################
-############################################################
+rm(list=ls())
+setwd("~/Bureau/VEM_for_estimated_networks/Codes/V2")
 
 
-#librairies nécessaires
-library(sna)
-library(MASS)
-library(huge)
-library(glasso)
-library(blockmodels)
-library(mclust)
-library(ggplot2)
-library(dplyr)
+############################################################################################
 
+#############################################################################################
+source('Simul_data_last.R')
+source('Main_function_last.R')
+source('VEM_last.R')
+#############################################################################################
+# GammaArrete <- c(0.70, 0.30, 0.05, 0.1, 0.1, 0.5)
+# PiMelange <- c(1/6, 1/3, 1/2)
+# paramsim <- list(GammaArrete = GammaArrete, PiMelange  = PiMelange)
+# n  =50; 
+# val_p <- c(20,50,100,500)
+# for (p in val_p){
+#   for (sim in 1:100){ 
+#     
+#     datasim <- SIMULDATA(GammaArrete, PiMelange, n,p)
+#     file_name = paste('res_simu/datasim/datasim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
+#     save(datasim,paramsim,file = file_name)
+#     
+#     }
+# }
 
-#############################################################
-#Construit une matrice symétrique à partir d'un vecteur
-#############################################################
-vect_mat_low <- function(V, diag=F)
-{
-  N <- length(V)
-  if(diag == F) {n <- (1+sqrt(1+8*N))/2} else{ n <- (-1+sqrt(1+8*N))/2}
-  M <- matrix(0,n,n) 
-  M[lower.tri(M, diag=diag)] <- V
-  B <- t(M)
-  diag(B) <- 0
-  M <- B + M
-  return(M)
+#------------------------------- REcupScore + VEM
+
+n  = 50; 
+val_p <- c(500,100,50,20)
+K  = 3
+N=1225
+for (p in val_p) {
+  for (sim in 1:100) { 
+     
+     print(paste("p=", p,", sim = ",sim))
+     file_name_data = paste('res_simu/datasim/datasim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
+     load(file_name_data)
+     score <- recup_scores(datasim$Y)
+     file_name_result = paste('res_simu/ressim/ressim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
+     save(score,file = file_name_result)
+     output <- VEM(S = score,K, niter=1000, epsilon_tau=1e-4, epsilon_eta = 1e-4,verbose = FALSE)
+     save(score,output,file=file_name_result)
+     
+  }
 }
 
 
-###########################################################################
-#Construit un vecteur à partir d'une matrice triangulaire inférieure
-###########################################################################
-mat_vect_low <- function(M, diag=F)
-{
-  V <- M[lower.tri(M, diag = diag)]
-  return(V)
-}
 
 
-############################################################################
-#Passage d'une matrice binaire à un vecteur des indices 
-############################################################################
-mat_bin_to_vect_ind <- function(n,pi_melange)
-{
-  Z_m <- rmultinom(n, size = 1, prob = pi_melange)
-  Z_v <- which(Z_m == 1, 1)
-  Z_v <- Z_v[,1] 
-  return(Z_v, Z_m)
-}
 
-
-###########################################################################
-#recuperer les indices de la matrice triangulaire inferieure 
-###########################################################################
-
-indices <- function(n, diag=F)
-{
-  N  <- (n * (n-1)/2)*(diag==F) +(n * (n+1)/2)*(diag==T)
-  S <- vect_mat_low(c(1:N), diag=diag)
-  S[upper.tri(S)]=0
-  return(which(S!=0,arr.ind=T))
-  
-}
-
-############################################################################
-#passer de n à N et inversement:
-############################################################################
-
-#N <- n*(n-1)/2
-#n <-(1+sqrt(1+8*N))/2
-
-#############################################################################
-#############################################################################
-fun_test<-function(a_i_b_i){
-  
-  return(exp(seq(log(a_i_b_i["a"]),log(a_i_b_i["b"]),length.out = a_i_b_i["k"])))
-}
-#############################################################################
-#############################################################################
-
-borne_inf <- function(tau_hat,Pi_hat,A,eta0,eta1){
-borne_inf <- sum(tau_hat %*% log(Pi_hat))  - sum(tau_hat * log(tau_hat)) +
-  .5*(sum(sapply(1:K, function(k){ sapply(1:K, function(l){
-    t(tau_hat[,k]) %*% as.matrix(vect_mat_low(A[,k,l])) %*% tau_hat[,l]})
-  }))) - 
-  .5*(sum(sapply(1:K, function(k){ sapply(1:K, function(l){
-    t(tau_hat[,k]) %*% 
-      as.matrix(vect_mat_low(eta0[, k, l]*log(eta0[, k, l]) +
-                               eta1[, k, l]*log(eta1[, k, l]))) %*% 
-      tau_hat[,l]})
-  }))) 
-return(borne_inf)
-}
