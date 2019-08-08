@@ -23,7 +23,7 @@ for (p in val_p) {
     file_name_data = paste('res_simu/datasim/datasim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
     load(file_name_data)
     weights = lweights_gaussian(datasim$Y)
-    score = edge.prob(weights, log = TRUE)
+    score = edge.prob(weights, log = TRUE) #il faut faire un logit ou un probit sur les scores car production de NA
     file_name_result = paste('res_simu/ressimSaturnin/ressimSaturnin_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
     save(score,file = file_name_result)
     output <- VEM(S = score,K, niter=1000, epsilon_tau=1e-4, epsilon_eta = 1e-4,verbose = FALSE)
