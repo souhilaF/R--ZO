@@ -34,16 +34,20 @@ for (p in val_p) {
   for (sim in 1:100) { 
      
      print(paste("p=", p,", sim = ",sim))
-     file_name_data = paste('res_simu/datasim/datasim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
-     load(file_name_data)
-     score <- recup_scores(datasim$Y)
      file_name_result = paste('res_simu/ressim/ressim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
-     save(score,file = file_name_result)
-     output <- VEM(S = score,K, niter=1000, epsilon_tau=1e-4, epsilon_eta = 1e-4,verbose = FALSE)
-     save(score,output,file=file_name_result)
-     
+    
+     if(!file.exists(file_name_result)){
+      file_name_data = paste('res_simu/datasim/datasim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
+      load(file_name_data)
+      score <- recup_scores(datasim$Y)
+      output <- VEM(S = score,K, niter=1000, epsilon_tau=1e-4, epsilon_eta = 1e-4,verbose = FALSE)
+      save(score,output,file = file_name_result)
+       datasim = c(); paramsim = c(); output = c(); score = c()
+      }
+    }
   }
-}
+
+
 
 
 
