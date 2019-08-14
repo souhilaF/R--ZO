@@ -20,7 +20,7 @@ for (p in val_p) {
   for (sim in 1:100) { 
     
     print(paste("p=", p,", sim = ",sim))
-    file_name_result = paste('res_simu/ressimSaturnin/ressimSaturnin_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
+    file_name_result = paste('ressimSaturnin/ressimSaturnin_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
     if(!file.exists(file_name_result)){
       
        file_name_data = paste('res_simu/datasim/datasim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
