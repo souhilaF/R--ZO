@@ -29,6 +29,7 @@ for (p in val_p) {
        score = edge.prob(weights, log = TRUE) 
     #il faut faire un logit ou un probit sur les scores car production de NA
     #on a des scores superieur a 1 et =0 revoir la simulation de données
+    #la simulation des données parait bonne revoir avec Stephane
       
 
        output <- VEM(S = score,K, niter=1000, epsilon_tau=1e-4, epsilon_eta = 1e-4,verbose = FALSE)
