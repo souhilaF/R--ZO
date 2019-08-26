@@ -40,12 +40,10 @@ for (p in val_p) {
     
     
     score_logit = log(score/(1-score))
-    #score_probit = probit(score)
     file_name_result = paste('res_simu/ressimSaturnin/ressimSaturnin_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
     save(score,file = file_name_result)
-    output_logit <- VEM(S = score_logit,K, niter=1000, epsilon_tau=1e-4, epsilon_eta = 1e-4,verbose = FALSE)
-    output_probit <- VEM(S = score_probit,K, niter=1000, epsilon_tau=1e-4, epsilon_eta = 1e-4,verbose = FALSE)
-    save(score,output,file=file_name_result)
+    output <- VEM(S = score_logit,K, niter=1000, epsilon_tau=1e-4, epsilon_eta = 1e-4,verbose = FALSE)
+    save(score_logit, a, output, file=file_name_result)
     datasim = c(); paramsim = c(); output = c(); score = c()
     
   }
