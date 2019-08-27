@@ -40,7 +40,13 @@ recup_scores <- function(Y){
   }
   
   
-  
+  lambda.seq = exp(seq(log(lambda.min),log(lambda.max), by = -log(lambda.step)))
+  Huge.edge = huge(Y, method = 'glasso', lambda=lambda.seq)
+  diff.df = abs(diff(Huge.edge$df))
+  new.lambda.seq = list()
+  sapply(1:length(diff.df),function(i){
+    new.lambda.seq[[i]] <<- exp(seq(log(lambda.seq[i]), log(lambda.seq[i+1]), length.out = 1+diff.df[i]))
+    })
   
   lambda.seq = unique(sort(unlist(new.lambda.seq), decreasing = T))
   Huge.edge = huge(Y, method = 'glasso', lambda=lambda.seq)
