@@ -1,0 +1,34 @@
+rm(list=ls())
+setwd("~/Bureau/VEM_for_estimated_networks/Codes/V2")
+source('Main_function_last.R')
+
+
+
+n  = 50; 
+val_p <- c(500,100,50,20)
+K  = 3
+N=1225
+for (p in val_p) {
+  for (sim in 1:100) { 
+    file_name_result = paste('res_simu/ressim/ressim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
+    load(file_name_result)
+    file_name = paste('res_simu/datasim/datasim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
+    load(file_name)
+    
+    #
+    diag(datasim$G) <- -1
+    score_arete <- data.frame()
+    colnames(score_arete) <- c('score_G0','espece_G0','score_G1','espece_G1')
+    score_G1 <- data.frame(score[datasim$G==1],which(datasim$G==1))
+    score_G0 <- data.frame(score[datasim$G==0],which(datasim$G==0))
+    score_arete <- data.frame(score_G0 = score[datasim$G==0], espece_G0 = which(datasim$G==0))
+    
+    score_arete <-s * mat_vect_low(datasim$G)
+    score_no_arete <- mat_vect_low(score) * (1-mat_vect_low(datasim$G))
+    
+    plot(output$borne_inf, pch=20, type='b', 
+         ylim = c(min(output$borne_inf), max(output$borne_inf)))
+    
+  }
+}
+ 
