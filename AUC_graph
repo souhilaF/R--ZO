@@ -1,0 +1,19 @@
+#------------------------AUC
+rm(list=ls())
+setwd("~/Bureau/dossier_final/ressim_AUC")
+
+library(mclust)
+library(ROCR)
+
+
+val_n = c(20, 50); 
+val_p <- c(500,100,50,20)
+K  = 3
+load('AUC_Saturnin.Rdata') 
+
+AUC <- list(n = rep(AUC$n, p = AUC$p, sim = AUC$sim, Psi = AUC$Psi, G = AUC$G, tau = AUC$tau, Z = AUC$Z)
+Z_i <- AUC$Z ~ n + p 
+tau_i <- AUC$tau ~ n +p
+      adjustedRandIndex(as.vector(Z_i),as.vector(tau_i))
+      o.rocc()
+      
