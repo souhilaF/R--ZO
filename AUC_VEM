@@ -19,6 +19,10 @@ val_p <- c(500,100,50,20)
 K  = 3
 
 AUC <- list()
+file_name_auc = paste('ressim_AUC/AUC_GLASSO')
+# file_name_auc = paste('ressim_AUC/AUC_Saturnin')
+# file_name_auc = paste('ressim_AUC/AUC_Normale')
+
 
 for (n in val_n){
   N <- n*(n-1)/2 
@@ -28,15 +32,12 @@ for (n in val_n){
       for (sim in 1:100) { 
         
         file_name_result = paste('res_simu/ressim/ressim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
-        file_name_auc = paste('ressim_AUC/AUC_GLASSO')
         file_name_data = paste('res_simu/datasim_2/datasim_n',n,'_p',p,'_sim',sim,'.Rdata',sep=''
         
         # file_name_result = paste('res_simu/ressimSaturnin/ressim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
-        # file_name_auc = paste('ressim_AUC/AUC_Saturnin')
         #file_name_data = paste('res_simu/datasim_2/datasim_n',n,'_p',p,'_sim',sim,'.Rdata',sep=''
         
         # file_name_result = paste('res_simu/ressim_Scores_Normale/ressim_Scores_Normale_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
-        # file_name_auc = paste('ressim_AUC/AUC_Normale')
         #file_name_data = paste('res_simu/datasim_2/datasim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
 
         if(!file.exists(file_name_auc)){
