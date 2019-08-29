@@ -58,16 +58,16 @@ save(AUC,file=file_name_auc)
 
 #------------------------AUC
 
-library(mclust)
+#library(mclust)
 
 
-val_n = c(20, 50); 
-val_p <- c(500,100,50,20)
-K  = 3
-for (n in val_n){
-  N <- n*(n-1)/2 
+#val_n = c(20, 50); 
+#val_p <- c(500,100,50,20)
+#K  = 3
+#for (n in val_n){
+#  N <- n*(n-1)/2 
   
   
-  for (p in val_p) {
-    for (sim in 1:100) { 
-Adj.rand.index(
+#  for (p in val_p) {
+#    for (sim in 1:100) { 
+#Adj.rand.index(
