@@ -1,4 +1,5 @@
 
+
 rm(list=ls())
 setwd("C:/Users/SOUCHE/Desktop/Codes/V2")
 
@@ -27,12 +28,20 @@ for (n in val_n){
       for (sim in 1:100) { 
         
         file_name_result = paste('res_simu/ressim/ressim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
-        file_name_auc = paste('res_simu/ressim/ressim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
+        file_name_auc = paste('ressim_AUC/AUC_GLASSO')
+        
+        # file_name_result = paste('res_simu/ressimSaturnin/ressim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
+        # file_name_auc = paste('ressim_AUC/AUC_Saturnin')
+        
+        # file_name_result = paste('res_simu/ressim_Scores_Normale/ressim_Scores_Normale_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
+        # file_name_auc = paste('ressim_AUC/AUC_Normale')
 
         if(!file.exists(file_name_auc)){
           load(file_name_result)
-          AUC <- list(AUC$n = n, AUC$p =p, AUC$sim = sim, AUC$Psi = output$Psi1, AUC$G = mat_vect_low(datasim$G), AUC$tau = max.col(output$tau), AUC$Z = datasim$Z)
-        }
+          AUC <- list(AUC$n = c(AUC$n,n), AUC$p =p, AUC$sim = sim, AUC$Psi = output$Psi1, AUC$G = mat_vect_low(datasim$G), AUC$tau = max.col(output$tau), AUC$Z = datasim$Z)
+        
+          save(AUC,file=file_name_auc)
+          }
       }
   }
   
@@ -53,4 +62,4 @@ for (n in val_n){
   
   for (p in val_p) {
     for (sim in 1:100) { 
-Adj.rand.index
+Adj.rand.index(
