@@ -32,10 +32,10 @@ for (n in val_n){
       for (sim in 1:100) { 
         
         file_name_result = paste('res_simu/ressim/ressim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
-        file_name_data = paste('res_simu/datasim_2/datasim_n',n,'_p',p,'_sim',sim,'.Rdata',sep=''
+        file_name_data = paste('res_simu/datasim_2/datasim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
         
         # file_name_result = paste('res_simu/ressimSaturnin/ressim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
-        #file_name_data = paste('res_simu/datasim_2/datasim_n',n,'_p',p,'_sim',sim,'.Rdata',sep=''
+        #file_name_data = paste('res_simu/datasim_2/datasim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
         
         # file_name_result = paste('res_simu/ressim_Scores_Normale/ressim_Scores_Normale_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
         #file_name_data = paste('res_simu/datasim_2/datasim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
