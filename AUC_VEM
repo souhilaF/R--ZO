@@ -1,0 +1,56 @@
+
+rm(list=ls())
+setwd("C:/Users/SOUCHE/Desktop/Codes/V2")
+
+
+############################################################################################
+
+#############################################################################################
+source('recup_scores.R')
+source('Main_function_last.R')
+source('VEM_last.R')
+
+#------------------------------creation dataframe
+
+
+val_n = c(20, 50); 
+val_p <- c(500,100,50,20)
+K  = 3
+
+AUC <- list()
+
+for (n in val_n){
+  N <- n*(n-1)/2 
+  
+
+  for (p in val_p) {
+      for (sim in 1:100) { 
+        
+        file_name_result = paste('res_simu/ressim/ressim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
+        file_name_auc = paste('res_simu/ressim/ressim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
+
+        if(!file.exists(file_name_auc)){
+          load(file_name_result)
+          AUC <- list(AUC$n = n, AUC$p =p, AUC$sim = sim, AUC$Psi = output$Psi1, AUC$G = mat_vect_low(datasim$G), AUC$tau = max.col(output$tau), AUC$Z = datasim$Z)
+        }
+      }
+  }
+  
+}
+
+
+#------------------------AUC
+
+library(mclust)
+
+
+val_n = c(20, 50); 
+val_p <- c(500,100,50,20)
+K  = 3
+for (n in val_n){
+  N <- n*(n-1)/2 
+  
+  
+  for (p in val_p) {
+    for (sim in 1:100) { 
+Adj.rand.index
