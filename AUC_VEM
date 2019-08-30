@@ -1,16 +1,16 @@
-
-
 rm(list=ls())
-setwd("C:/Users/SOUCHE/Desktop/Codes/V2")
-
+#setwd("C:/Users/SOUCHE/Desktop/Codes/V2")
+#setwd("~/Bureau/dossier_final")
+setwd("~/media/mmip/DELL_SAVE/stage_M2/Codes")
 
 ############################################################################################
 
 #############################################################################################
-source('recup_scores.R')
-source('Main_function_last.R')
-source('VEM_last.R')
 
+#source sur pc fixe
+source('~/Bureau/Codes/V2/Simul_data_last.R')
+source('~/Bureau/Codes/V2/Main_function_last.R')
+source('~/Bureau/Codes/V2/VEM_last.R')
 #------------------------------creation dataframe
 
 
@@ -18,57 +18,56 @@ val_n = c(20, 50);
 val_p <- c(500,100,50,20)
 K  = 3
 
-AUC <- list()
-file_name_auc = paste('ressim_AUC/AUC_GLASSO')
-# file_name_auc = paste('ressim_AUC/AUC_Saturnin')
-# file_name_auc = paste('ressim_AUC/AUC_Normale')
+#AUC <- list()
 
+##file_name_auc = paste('ressim_AUC/AUC_Saturnin.Rdata')
+ file_name_auc = paste('ressim_AUC/AUC_Normale')
+# file_name_auc = paste('ressim_AUC/AUC_GLASSO')
 
+ResTab = matrix(0, length(val_n)*length(val_p)*100, 5)
+colnames(ResTab) = c('n', 'p', 'sim', 'ARI', 'AUC')
+simu = 0
 for (n in val_n){
   N <- n*(n-1)/2 
   
-
+  
   for (p in val_p) {
-      for (sim in 1:100) { 
-        
-        file_name_result = paste('res_simu/ressim/ressim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
-        file_name_data = paste('res_simu/datasim_2/datasim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
-        
-        # file_name_result = paste('res_simu/ressimSaturnin/ressim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
-        #file_name_data = paste('res_simu/datasim_2/datasim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
-        
-        # file_name_result = paste('res_simu/ressim_Scores_Normale/ressim_Scores_Normale_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
-        #file_name_data = paste('res_simu/datasim_2/datasim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
+    for (sim in 1:100) {
+      
+      
+      # file_name_result = paste('res_simu/ressim/ressim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
+      # file_name_data = paste('res_simu/datasim_2/datasim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
+                             
+      ##file_name_result = paste('res_simu/ressimSaturnin/ressimSaturnin_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
+      ##output <- output_logit
+      ##file_name_data = paste('datasim/datasim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
 
-        if(!file.exists(file_name_auc)){
-          load(file_name_data)
-          load(file_name_result)
-          
-           AUC$n <- c(AUC$n,n); AUC$p <- c(AUC$p,p); AUC$sim <- c(AUC$sim,sim); 
-           AUC$Psi <- c(AUC$Psi,output$Psi1); AUC$G <- c(AUC$G, mat_vect_low(datasim$G)); 
-           AUC$tau <- c(AUC$tau, max.col(output$tau)); AUC$Z <- c(AUC$Z,datasim$Z)
-        
-         
-          }
-      }
+                             
+      file_name_result = paste('res_simu/ressim_Scores_Normale/ressim_Scores_Normale_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
+      file_name_data = paste('res_simu/datasim_2/datasim_n',n,'_p',p,'_sim',sim,'.Rdata',sep='')
+      
+      
+      if(file.exists(file_name_result)){
+        simu = simu + 1
+        load(file_name_data)
+        load(file_name_result)
+        ResTab[simu, 1] = n; ResTab[simu, 2] = p; ResTab[simu, 3] = sim
+        Z.hat = apply(output$tau, 1, which.max); ResTan[simu, 4] = adjustedRandIndex(datasim$Z, Z.hat)
+        G.hat = mat_vect_low(output$Psi1);  ResTan[simu, 5] = prediction(mat_vect_low(datasim$G), G.hat)
+
+                # if(!file.exists(file_name_auc)){
+                             #   load(file_name_data)
+                             #   load(file_name_result)
+                             #   
+                             #   AUC$n <- c(AUC$n,n); AUC$p <- c(AUC$p,p); AUC$sim <- c(AUC$sim,sim); 
+                             #   AUC$Psi <- c(AUC$Psi, output_logit$Psi1); AUC$G <- c(AUC$G, mat_vect_low(datasim$G)); 
+                             #   AUC$tau <- c(AUC$tau, max.col(output_logit$tau)); AUC$Z <- c(AUC$Z,datasim$Z)
+                             # }
+    }
   }
   
+  }
 }
 
-save(AUC,file=file_name_auc)
-
-#------------------------AUC
-
-#library(mclust)
-
-
-#val_n = c(20, 50); 
-#val_p <- c(500,100,50,20)
-#K  = 3
-#for (n in val_n){
-#  N <- n*(n-1)/2 
+save(ResTab,file=file_name_auc)
   
-  
-#  for (p in val_p) {
-#    for (sim in 1:100) { 
-#Adj.rand.index(
